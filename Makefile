@@ -1,9 +1,9 @@
 CC = gcc
 
 # Defined the path for -o (executable)
-TARGET = src/packetSniffer/bin/packet_sniffer
+TARGET = src/defend/protecter/packetSniffer/bin/packet_sniffer
 
-SRC = src/packetSniffer/main.c
+SRC = src/defend/protecter/packetSniffer/main.c
 
 LIBS = -lpcap
 
