@@ -16,7 +16,45 @@ def trigger_defense() -> dict:
     data = request.get_json()
     wait_time = data.get('wait_time', 7)    # Default to 7 if not provided
     tresholdAttacker = data.get('tresholdAttacker', 0.2)
+    ban_duration = data.get('ban_duration', 60)
     print(f"Wait time: {wait_time}")
+    print(f"Ban duration: {ban_duration}")
+    
+    def block_ip(ip, ban_duration=60):
+        try:
+            # Use /tmp directory for rules
+            rules_dir = '/tmp/pf_rules'
+            os.makedirs(rules_dir, exist_ok=True)
+            
+            # Create a temporary rule file for this IP
+            rule_file = f'{rules_dir}/rule_{ip.replace(".", "_")}.conf'
+            with open(rule_file, 'w') as f:
+                f.write(f'block in from {ip} to any\n')
+            
+            # Add the rule
+            subprocess.run(['/usr/bin/sudo', '/sbin/pfctl', '-f', rule_file], check=True)
+            subprocess.run(['/usr/bin/sudo', '/sbin/pfctl', '-E'], check=True)
+            print(f"Successfully blocked IP: {ip}")
+            
+            # Schedule unban
+            def unban():
+                time.sleep(ban_duration)
+                try:
+                    # Remove the rule file
+                    os.remove(rule_file)
+                    # Reload the default rules file
+                    subprocess.run(['/usr/bin/sudo', '/sbin/pfctl', '-f', '/etc/pf.conf'], check=True)
+                    print(f"Successfully unbanned IP: {ip}")
+                    return True
+                except Exception as e:
+                    print(f"Failed to unban IP: {str(e)}")
+                    return False
+
+            # Start unban thread
+            threading.Thread(target=unban, daemon=True).start()
+        except Exception as e:
+            print(f"Failed to block IP: {str(e)}")
+
     def host_function():
         print("Starting to sniff the network...")
         # Start packet sniffer as a subprocess
@@ -33,13 +71,17 @@ def trigger_defense() -> dict:
 
         # Start analyzing the traffic
         defense = DefendStrategy()
-        under_attack, ip, history, ip_counts = defense.analyze_traffic(tresholdAttacker=tresholdAttacker)
+        under_attack, ip, ip_counts = defense.analyze_traffic(tresholdAttacker=tresholdAttacker)
+
+        banned = False
+        if under_attack and ip:
+            banned = block_ip(ip, ban_duration)
 
         result = {
               "under_attack": under_attack,
               "ip": ip,
-              "history": history.to_dict(),
-              "ip_counts": ip_counts
+              "ip_counts": ip_counts,
+              "banned": banned
         }       
 
         print(f"Result: {result}")

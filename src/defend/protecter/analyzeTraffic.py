@@ -25,12 +25,13 @@ class DefendStrategy:
             filtered_counts = ip_counts[ip_counts.index != HOST_IP]
 
             # Filter out ips that dont have the XX.XXX.XX from the localhost ip address
-            localPrefix = HOST_IP.split('.')[0] + '.' + HOST_IP.split('.')[1] + '.' + HOST_IP.split('.')[2]
+            localPrefix = HOST_IP.split('.')[0] + '.' + HOST_IP.split('.')[1]
             print(f"Local prefix: {localPrefix}")
             filtered_counts = filtered_counts[filtered_counts.index.str.startswith(localPrefix)]
 
             if filtered_counts.empty:
-                  return False, None, df, ip_counts
+                  print("No traffic from outside")
+                  return False, None, ip_counts.to_dict()
             
             # Calculate percentages based on total traffic (including local)
             percentages = filtered_counts / total_traffic
@@ -52,6 +53,7 @@ class DefendStrategy:
             
             # If most_frequent_ip has sent disproportionate amount of traffic, then we are under attack
             if percentageAttacker > tresholdAttacker:
-                  return True, most_frequent_ip, df, ip_counts_dict
+                  print("Under attack")
+                  return True, most_frequent_ip, ip_counts_dict
             else:
-                  return False, None, df, ip_counts_dict
+                  return False, None, ip_counts_dict

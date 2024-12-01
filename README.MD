@@ -53,3 +53,14 @@ bash src/defend/docker/startWebApp.bash
 bash other/scripts/attack.bash
 ```
 
+
+
+# OTHER 
+- Show banned rules
+```
+sudo pfctl -sr
+```
+- Show banned IPs
+```
+sudo pfctl -t blockedips -T show
+```

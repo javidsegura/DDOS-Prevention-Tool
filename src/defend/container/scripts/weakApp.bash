@@ -3,7 +3,7 @@
 # DESCRIPTION: Run a docker container with a weak application to be attacked
 
 
-docker run -m 200m --memory-swap 200m \
+docker run -m 220m --memory-swap 220m \
     -p 8501:8501 \
     --add-host=host.docker.internal:host-gateway \
     --name demoweb \
