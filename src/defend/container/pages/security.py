@@ -17,9 +17,9 @@ with attackerCol:
 
 waitCol, banCol = st.columns(2)
 with waitCol:
-      wait_time = st.slider("Time for traffic analysis (s)", min_value=0.0, max_value=30.0, value=15.0, step=0.1)
+      wait_time = st.slider("Time for traffic analysis (s)", min_value=0.0, max_value=30.0, value=8.0, step=0.1)
 with banCol:
-      ban_duration = st.slider("Ban duration (s)", min_value=0.0, max_value=3000.0, value=60.0, step=0.1)
+      ban_duration = st.slider("Ban duration (s)", min_value=0.0, max_value=3600.0, value=60.0, step=0.1)
 st.divider()
 if on:
       defense_data = startDefense(tresholdMemory=tresholdMemory, tresholdAttacker=tresholdAttacker, wait_time=wait_time, ban_duration=ban_duration)
@@ -60,8 +60,5 @@ if on:
       st.divider()
       st.subheader("Traffic Record")
 
-      col5 = st.columns(1)
-
-      with col5:
-            st.markdown("**IP Counts**")
-            st.dataframe(ip_counts_df)
+      st.markdown("**IP Counts**")
+      st.dataframe(ip_counts_df)
