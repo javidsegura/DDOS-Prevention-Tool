@@ -5,7 +5,6 @@ import os
 import requests
 
 TRESHOLD = 0.75
-WAIT_TIME = 3
 
 
 def get_container_memory_usage():
@@ -42,32 +41,44 @@ def get_container_memory_usage():
     except Exception as e:
         print(f"Error reading container memory: {e}")
 
-def monitor_memory():
+def monitor_memory(tresholdMemory:float=TRESHOLD, 
+                   tresholdAttacker:float=TRESHOLD,
+                   wait_time:float=3):
     while True:
         usage_mb, limit_mb, percentage = get_container_memory_usage()
-        if percentage > TRESHOLD:
-            print(f"\t\t!> Memory usage is greater than {TRESHOLD}%! Analyzing traffic")
+        if percentage > tresholdMemory:
+            print(f"\t\t!> Memory usage is greater than {tresholdMemory}%! Analyzing traffic")
             try:
-                response = requests.post("http://localhost:12345/trigger-defense")
+                if limit_mb < 7000:
+                    response = requests.post("http://host.docker.internal:12345/trigger-defense", 
+                                         json={"wait_time": wait_time,
+                                               "tresholdAttacker": tresholdAttacker})
+                else: # Working locally
+                    response = requests.post("http://localhost:12345/trigger-defense", 
+                                         json={"wait_time": wait_time,
+                                               "tresholdAttacker": tresholdAttacker})
+                    
                 defense_data = response.json()
                 print(f"Defense response: {defense_data}")
                 return defense_data
             except Exception as e:
                 print(f"Error triggering defense: {e}")
-        time.sleep(WAIT_TIME)
+                break
+        time.sleep(wait_time)
 
-def startDefense(treshold:float=TRESHOLD, wait_time:float=WAIT_TIME) -> dict:
-    print(f"Starting defense with treshold {treshold} and wait time {wait_time}")
-    global TRESHOLD, WAIT_TIME
-    TRESHOLD = treshold
-    WAIT_TIME = wait_time
+def startDefense(tresholdMemory:float=TRESHOLD, tresholdAttacker:float=TRESHOLD, wait_time:float=3) -> dict:
+    print(f"Starting defense with treshold {tresholdMemory} and wait time {wait_time}")
+    global TRESHOLD
+    TRESHOLD = tresholdMemory
     
     # Create an event to signal when monitor_memory returns
     event = threading.Event()
     defense_result = [None]  # Use a list to store the result
     
     def wrapped_monitor():
-        defense_result[0] = monitor_memory()
+        defense_result[0] = monitor_memory(tresholdMemory=tresholdMemory, 
+                                           tresholdAttacker=tresholdAttacker, 
+                                           wait_time=wait_time)
         event.set()
     
     monitor_thread = threading.Thread(target=wrapped_monitor, daemon=True)
