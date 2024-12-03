@@ -26,7 +26,6 @@ def get_container_memory_usage():
                 limit_bytes = int(f.read())
         
         else:
-            # If no cgroups info available, use psutil as fallback
             process = psutil.Process(os.getpid())
             usage_bytes = process.memory_info().rss
             limit_bytes = psutil.virtual_memory().total

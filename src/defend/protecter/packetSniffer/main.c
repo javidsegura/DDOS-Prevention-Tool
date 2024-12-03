@@ -1,4 +1,16 @@
-/* Sets up the packet sniffer */
+
+/*
+
+This files provides the core functionality of the defense system.
+
+When running this code, all the traffic that is being sent through the en0 (Wi-Fi) network interface is being captured and stored in a CSV file.
+
+You need to have libpcap installed to run this code.
+
+Do this with brew install libpcap (MacOS) or apt-get install libpcap (on Linux)
+
+*/
+
 
 #include <pcap.h>
 #include <stdio.h>

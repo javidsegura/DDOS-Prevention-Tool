@@ -41,8 +41,6 @@ if on:
                   orient='index', 
                   columns=['Packets']
                   )
-
-
       st.title("Network Analysis")
       st.subheader("Status")
       col1, col2, col3 = st.columns(3)
